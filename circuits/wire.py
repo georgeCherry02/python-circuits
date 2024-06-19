@@ -1,17 +1,10 @@
 from .connection_point import ConnectionPoint
 from .colours import DEAD_COLOUR, LIVE_COLOUR
+from .geometry import get_nearest_point
 
 from pygame import draw, Surface
 
 from copy import deepcopy
-
-
-def get_nearest_point(p1, p2, p3):
-    (x1, y1), (x2, y2), (x3, y3) = p1, p2, p3
-    dx, dy = x2 - x1, y2 - y1
-    det = dx * dx + dy * dy
-    a = (dy * (y3 - y1) + dx * (x3 - x1)) / det
-    return x1 + a * dx, y1 + a * dy
 
 
 class Wire:
@@ -19,6 +12,7 @@ class Wire:
     This class represents a single wire which can be connected to multiple
     other components
     """
+
     def _entangle(self, cp: ConnectionPoint):
         self._connections.append(deepcopy(cp.high))
         cp.set_state_functor(self.high)

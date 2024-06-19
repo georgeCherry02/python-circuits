@@ -1,6 +1,7 @@
-from circuits.wire import Wire
-from circuits.transistor import Transistor, TRANSISTOR_SIZE
 from circuits.connection_point import ConnectionPoint
+from circuits.not_gate import NotGate
+from circuits.transistor import Transistor, TRANSISTOR_SIZE
+from circuits.wire import Wire
 
 import pygame
 from pygame import Vector2
@@ -27,6 +28,7 @@ def signal_func() -> bool:
 def get_render_coords(x: int, y: int) -> Vector2:
     return Vector2(x + 250, y + 250)
 
+
 def get_dead_connection(x: int, y: int) -> ConnectionPoint:
     return ConnectionPoint(get_render_coords(x, y), lambda: False)
 
@@ -45,6 +47,19 @@ def simple_example():
     output_end = get_dead_connection(20, 0)
     output_wire = Wire(transistor.output, output_end)
     return (source_wire, signal_wire, output_wire, transistor)
+
+
+def not_gate_example():
+    source = ConnectionPoint(get_render_coords(-20, 0), source_func)
+    source_end = get_dead_connection(-5, 0)
+    source_wire = Wire(source, source_end)
+
+    not_gate = NotGate(source_end)
+
+    ground = get_dead_connection(20, 0)
+    output_wire = Wire(not_gate.output, ground)
+    return [source_wire, output_wire, not_gate]
+
 
 def not_gate_if_resistance_was_a_thing():
     input = ConnectionPoint(get_render_coords(0, 20), source_func)
@@ -72,9 +87,19 @@ def not_gate_if_resistance_was_a_thing():
     battery_to_transistor = Wire(battery, left_transistor_input)
     inter_transistor_connection = Wire(left_transistor.output, right_transistor_input)
     transistor_to_ground = Wire(right_transistor.output, ground)
-    
 
-    return [input_wire, left_input_wire, right_input_wire, battery_to_transistor, inter_transistor_connection, transistor_to_ground, left_transistor, right_transistor, input_to_left_transistor, input_to_right_transistor]
+    return [
+        input_wire,
+        left_input_wire,
+        right_input_wire,
+        battery_to_transistor,
+        inter_transistor_connection,
+        transistor_to_ground,
+        left_transistor,
+        right_transistor,
+        input_to_left_transistor,
+        input_to_right_transistor,
+    ]
 
 
 # Run until the user asks to quit
@@ -96,7 +121,7 @@ while running:
     screen.fill((140, 140, 140))
 
     # Draw components
-    components = simple_example()
+    components = not_gate_example()
     for component in components:
         component.draw(screen)
 
