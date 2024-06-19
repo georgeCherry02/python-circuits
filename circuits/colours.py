@@ -1,0 +1,2 @@
+DEAD_COLOUR = (0, 0, 0)
+LIVE_COLOUR = (250, 221, 56)

@@ -1,11 +1,9 @@
 from .connection_point import ConnectionPoint
+from .colours import DEAD_COLOUR, LIVE_COLOUR
 
 from pygame import draw, Surface
 
 from copy import deepcopy
-
-DEAD_COLOUR = (0, 0, 0)
-LIVE_COLOUR = (250, 221, 56)
 
 
 def get_nearest_point(p1, p2, p3):
