@@ -1,5 +1,5 @@
 from circuits.wire import Wire
-from circuits.transistor import Transistor
+from circuits.transistor import Transistor, TRANSISTOR_SIZE
 from circuits.connection_point import ConnectionPoint
 
 import pygame
@@ -28,15 +28,18 @@ def get_render_coords(x: int, y: int) -> Vector2:
     return Vector2(x + 250, y + 250)
 
 
-source = ConnectionPoint(get_render_coords(-15, 0), source_func)
-source_end = ConnectionPoint(get_render_coords(-5, 0), lambda: False)
+source = ConnectionPoint(get_render_coords(-20, 0), source_func)
+source_end = ConnectionPoint(get_render_coords(-TRANSISTOR_SIZE, 0), lambda: False)
 source_wire = Wire(source, source_end)
 
-signal = ConnectionPoint(get_render_coords(0, 15), signal_func)
-signal_end = ConnectionPoint(get_render_coords(0, 5), lambda: False)
+signal = ConnectionPoint(get_render_coords(0, 20), signal_func)
+signal_end = ConnectionPoint(get_render_coords(0, TRANSISTOR_SIZE), lambda: False)
 signal_wire = Wire(signal, signal_end)
 
 transistor = Transistor(source_end, signal_end)
+
+output_end = ConnectionPoint(get_render_coords(20, 0), lambda: False)
+output_wire = Wire(transistor.output, output_end)
 
 # Run until the user asks to quit
 running = True
@@ -59,6 +62,7 @@ while running:
     # Draw components
     source_wire.draw(screen)
     signal_wire.draw(screen)
+    output_wire.draw(screen)
     transistor.draw(screen)
 
     # Flip the display
