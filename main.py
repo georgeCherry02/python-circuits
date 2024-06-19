@@ -46,7 +46,7 @@ def simple_example():
     output_wire = Wire(transistor.output, output_end)
     return (source_wire, signal_wire, output_wire, transistor)
 
-def not_gate():
+def not_gate_if_resistance_was_a_thing():
     input = ConnectionPoint(get_render_coords(0, 20), source_func)
     input_mid = get_dead_connection(0, 10)
 
@@ -96,7 +96,7 @@ while running:
     screen.fill((140, 140, 140))
 
     # Draw components
-    components = not_gate()
+    components = simple_example()
     for component in components:
         component.draw(screen)
 
