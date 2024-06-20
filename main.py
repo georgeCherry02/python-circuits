@@ -1,4 +1,4 @@
-from circuits.examples import signal, source, simple_example
+from circuits.examples import signal, source, simple_example, or_gate
 
 import pygame
 from pygame.locals import K_SPACE, K_m, K_w, KEYDOWN
@@ -6,6 +6,8 @@ from pygame.locals import K_SPACE, K_m, K_w, KEYDOWN
 pygame.init()
 
 screen = pygame.display.set_mode([500, 500])
+
+drawables = simple_example()
 
 # Run until the user asks to quit
 running = True
@@ -26,9 +28,8 @@ while running:
     screen.fill((140, 140, 140))
 
     # Draw components
-    components = simple_example()
-    for component in components:
-        component.draw(screen)
+    for drawable in or_gate():
+        drawable.draw(screen)
 
     # Flip the display
     pygame.display.flip()

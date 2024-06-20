@@ -85,3 +85,33 @@ def not_gate_if_resistance_was_a_thing():
         input_to_left_transistor,
         input_to_right_transistor,
     ]
+
+
+def or_gate():
+    i1_start = ConnectionPoint(get_render_coords(-10, 20), source.high)
+    i1_end = get_dead_connection(-10, TRANSISTOR_SIZE)
+    i1_wire = Wire(i1_start, i1_end, "i1")
+
+    i2_start = ConnectionPoint(get_render_coords(10, 20), signal.high)
+    i2_end = get_dead_connection(10, TRANSISTOR_SIZE)
+    i2_wire = Wire(i2_start, i2_end, "i2")
+
+    t1_battery = ConnectionPoint(
+        get_render_coords(-10 - TRANSISTOR_SIZE, 0), lambda: True
+    )
+    t2_battery = ConnectionPoint(
+        get_render_coords(10 - TRANSISTOR_SIZE, 0), lambda: True
+    )
+
+    t1 = Transistor(t1_battery, i1_wire.end)
+    t2 = Transistor(t2_battery, i2_wire.end)
+
+    t1_out = Wire(t1.output, get_dead_connection(0, 0), "t1")
+    t1_out1 = t1_out.extend(get_dead_connection(0, -20))
+    t2_out = Wire(t2.output, get_dead_connection(20, 0), "t2")
+    t2_out1 = t2_out.extend(get_dead_connection(20, -10))
+    t1_t2_meet = t1_out1.connect_wire(t2_out1, "End")
+
+    # output_end = get_dead_connection(20, 0)
+    # output_wire = Wire(transistor.output, output_end)
+    return (i1_wire, i2_wire, t1, t2, t1_out, t1_out1, t2_out, t2_out1, t1_t2_meet)

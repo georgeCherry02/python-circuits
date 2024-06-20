@@ -1,6 +1,6 @@
 class Source:
     def __init__(self):
-        self.state = True
+        self.state = False 
 
     def inverse(self):
         self.state = not self.state
