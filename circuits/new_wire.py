@@ -1,5 +1,5 @@
 from circuits.colours import DEAD_COLOUR, LIVE_COLOUR
-from .geometry import get_nearest_point
+from geometry import NoOrthogonalConnection, get_nearest_point
 
 from pygame import draw, Surface, Vector2
 
@@ -7,18 +7,22 @@ from math import inf
 from typing import Callable, List, Optional, Tuple
 
 
-def find_nearest_point_across_seq(
+def find_nearest_point_across_segments(
     segments: List[Tuple[Vector2, Vector2]], target: Vector2
 ) -> Vector2:
     current_nearest = None
     current_nearest_distance = inf
     for start, end in segments:
-        nearest_point_on_segment = get_nearest_point(start, end, target)
+        try:
+            nearest_point_on_segment = get_nearest_point(start, end, target)
+        except NoOrthogonalConnection:
+            continue
         distance = nearest_point_on_segment.distance_to(target)
         if distance < current_nearest_distance:
             current_nearest_distance = distance
             current_nearest = nearest_point_on_segment
 
+    print(f"Found nearest={current_nearest}")
     return current_nearest  # type: ignore
 
 
@@ -76,11 +80,14 @@ class Wire:
         self.connections.append(point)
         self.add_stretch(point.location)
 
-    def add_stretch(self, target: Vector2):
+    def add_stretch(self, target: Vector2, /, debug: bool = False):
+        if debug:
+            print(f"Extending wire to target={target}")
+            print(f"Current segments: {self.segments}")
         nearest_point = (
             self.connections[0].location
             if not self.segments
-            else find_nearest_point_across_seq(self.segments, target)
+            else find_nearest_point_across_segments(self.segments, target)
         )
         self.segments.append((nearest_point, target))
 

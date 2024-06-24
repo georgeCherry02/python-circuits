@@ -1,4 +1,5 @@
 from circuits.new_wire import Wire
+from circuits.not_gate import NotGate
 from circuits.source import Source
 from circuits.transistor import Transistor, TRANSISTOR_SIZE
 
@@ -33,31 +34,43 @@ def simple_example(source: Source, signal: Source):
     return (source_wire, signal_wire, output_wire, transistor)
 
 
-"""
 def not_gate(source: Source):
-    source_start = ConnectionPoint(get_render_coords(-20, 0), source.high)
+    source_start = Wire.ConnectionPoint(get_render_coords(-20, 0), source.high)
     source_end = get_dead_connection(-5, 0)
-    source_wire = Wire(source_start, source_end)
+    source_wire = Wire("source", source_start)
+    source_wire.add_connection(source_end)
 
     not_gate = NotGate(source_end)
 
     ground = get_dead_connection(20, 0)
-    output_wire = Wire(not_gate.output, ground)
+    output_wire = Wire("output", not_gate.output)
+    output_wire.add_connection(ground)
+
     return [source_wire, output_wire, not_gate]
 
 
+def complex_wiring_example(i1: Source, i2: Source):
+    i1_cp = Wire.ConnectionPoint(get_render_coords(-20, 0), i1.high)
+    i2_cp = Wire.ConnectionPoint(get_render_coords(0, 20), i2.high)
+
+    wire = Wire("test_wire", i1_cp)
+    wire.add_stretch(get_render_coords(0, 0))
+    wire.add_stretch(get_render_coords(10, 0))
+    wire.add_stretch(get_render_coords(5, 30))
+    wire.add_connection(i2_cp)
+
+    return [wire]
+
+
 def not_gate_if_resistance_was_a_thing(source: Source):
-    input = ConnectionPoint(get_render_coords(0, 20), source.high)
-    input_mid = get_dead_connection(0, 10)
+    input = Wire.ConnectionPoint(get_render_coords(0, 20), source.high)
+    input_wire = Wire("input", input)
+    input_wire.add_stretch(get_render_coords(0, 10))
+    input_wire.add_stretch(get_render_coords(-10, 10))
+    input_wire.add_stretch(get_render_coords(10, 10))
 
-    input_wire = Wire(input, input_mid)
-    left_input_end = get_dead_connection(-10, 10)
-    right_input_end = get_dead_connection(10, 10)
-    left_input_wire = input_wire.extend(left_input_end)
-    right_input_wire = input_wire.extend(right_input_end)
-
-    battery = ConnectionPoint(get_render_coords(-20, 0), lambda: True)
-    ground = ConnectionPoint(get_render_coords(20, 0), lambda: False)
+    battery = Wire.ConnectionPoint(get_render_coords(-20, 0), lambda: True)
+    ground = Wire.ConnectionPoint(get_render_coords(20, 0), lambda: False)
 
     left_transistor_input = get_dead_connection(-17, 0)
     left_transistor_signal = get_dead_connection(-10, 7)
@@ -67,50 +80,59 @@ def not_gate_if_resistance_was_a_thing(source: Source):
     right_transistor_signal = get_dead_connection(10, 7)
     right_transistor = Transistor(right_transistor_input, right_transistor_signal)
 
-    input_to_left_transistor = left_input_wire.extend(left_transistor_signal)
-    input_to_right_transistor = right_input_wire.extend(right_transistor_signal)
-    battery_to_transistor = Wire(battery, left_transistor_input)
-    inter_transistor_connection = Wire(left_transistor.output, right_transistor_input)
-    transistor_to_ground = Wire(right_transistor.output, ground)
+    input_wire.add_connection(left_transistor_signal)
+    input_wire.add_connection(right_transistor_signal)
+
+    supply_wire = Wire("supply", battery)
+    supply_wire.add_connection(left_transistor_input)
+
+    connector_wire = Wire("connector", left_transistor.output)
+    connector_wire.add_connection(right_transistor_input)
+
+    ground_wire = Wire("ground", ground)
+    ground_wire.add_connection(right_transistor.output)
+
+    output = get_dead_connection(0, -20)
+    connector_wire.add_connection(output)
 
     return [
         input_wire,
-        left_input_wire,
-        right_input_wire,
-        battery_to_transistor,
-        inter_transistor_connection,
-        transistor_to_ground,
         left_transistor,
         right_transistor,
-        input_to_left_transistor,
-        input_to_right_transistor,
+        supply_wire,
+        connector_wire,
+        ground_wire,
     ]
 
 
-def or_gate(i1_state: Callable[[], bool], i2_state: Callable[[], bool]):
-    i1_start = ConnectionPoint(get_render_coords(-10, 20), i1_state)
-    i1_end = get_dead_connection(-10, TRANSISTOR_SIZE)
-    i1_wire = Wire(i1_start, i1_end, "i1")
+def or_gate(i1: Source, i2: Source):
+    i1_source = Wire.ConnectionPoint(get_render_coords(-10, 20), i1.high)
+    i2_source = Wire.ConnectionPoint(get_render_coords(10, 20), i2.high)
 
-    i2_start = ConnectionPoint(get_render_coords(10, 20), i2_state)
-    i2_end = get_dead_connection(10, TRANSISTOR_SIZE)
-    i2_wire = Wire(i2_start, i2_end, "i2")
+    input_one = Wire("Input one", i1_source)
+    input_two = Wire("Input two", i2_source)
 
-    t1_battery = ConnectionPoint(
+    t1_signal = get_dead_connection(-10, TRANSISTOR_SIZE)
+    t2_signal = get_dead_connection(10, TRANSISTOR_SIZE)
+
+    input_one.add_connection(t1_signal)
+    input_two.add_connection(t2_signal)
+
+    t1_battery = Wire.ConnectionPoint(
         get_render_coords(-10 - TRANSISTOR_SIZE, 0), lambda: True
     )
-    t2_battery = ConnectionPoint(
+    t2_battery = Wire.ConnectionPoint(
         get_render_coords(10 - TRANSISTOR_SIZE, 0), lambda: True
     )
 
-    t1 = Transistor(t1_battery, i1_wire.end)
-    t2 = Transistor(t2_battery, i2_wire.end)
+    t1 = Transistor(t1_battery, t1_signal)
+    t2 = Transistor(t2_battery, t2_signal)
 
-    t1_out = Wire(t1.output, get_dead_connection(0, 0), "t1")
-    t1_out1 = t1_out.extend(get_dead_connection(0, -20))
-    t2_out = Wire(t2.output, get_dead_connection(20, 0), "t2")
-    t2_out1 = t2_out.extend(get_dead_connection(20, -10))
-    t1_t2_meet = t1_out1.connect_wire(t2_out1, "End")
+    output = Wire("output", t1.output)
+    output.add_stretch(get_render_coords(0, 0), debug=True)
+    output.add_stretch(get_render_coords(0, -20), debug=True)
+    output.add_stretch(get_render_coords(20, -10), debug=True)
+    output.add_stretch(get_render_coords(20, 0), debug=True)
+    output.add_connection(t2.output)
 
-    return (i1_wire, i2_wire, t1, t2, t1_out, t1_out1, t2_out, t2_out1, t1_t2_meet)
-"""
+    return (input_one, input_two, t1, t2, output)

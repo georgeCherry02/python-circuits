@@ -42,29 +42,26 @@ def get_anticlockwise_dir(dir: DIRECTION) -> DIRECTION:
             return "UP"
 
 
-def get_nearest_end_to_p3(p1: Vector2, p2: Vector2, p3: Vector2) -> Vector2:
-    p1_closer = p3.distance_to(p1) < p3.distance_to(p2)
-    return p1 if p1_closer else p2
-
-
-def get_nearest_point_p3_off_line(p1: Vector2, p2: Vector2, p3: Vector2) -> Vector2:
+class NoOrthogonalConnection(Exception):
     """
-    This function makes the assumption that p3 is not present on the infinite
-    line which p1 and p2 are both on
+    This exception will be raised when an orthogonal connection is requested
+    to a point which does not sit orthogonal to the line
     """
-    (x1, y1), (x2, y2), (x3, y3) = p1, p2, p3
-    dx, dy = x2 - x1, y2 - y1
-    det = dx * dx + dy * dy
-    a = (dy * (y3 - y1) + dx * (x3 - x1)) / det
-    return Vector2(x1 + a * dx, y1 + a * dy)
 
 
 def get_nearest_point(p1: Vector2, p2: Vector2, p3: Vector2) -> Vector2:
-    segment = (p2 - p1).normalize()
-    end_to_p3 = (p3 - p2).normalize()
-    on_line = abs(segment.dot(end_to_p3)) == 1.0
-    return (
-        get_nearest_end_to_p3(p1, p2, p3)
-        if on_line
-        else get_nearest_point_p3_off_line(p1, p2, p3)
+    horizontal = p1.y == p2.y
+    between_p1_p2_x = ((p1.x <= p3.x) and (p3.x <= p2.x)) or (
+        (p2.x <= p3.x) and (p3.x <= p1.x)
     )
+    between_p1_p2_y = ((p1.y <= p3.y) and (p3.y <= p2.y)) or (
+        (p2.y <= p3.y) and (p3.y <= p1.y)
+    )
+    if horizontal and between_p1_p2_x:
+        return Vector2(p3.x, p1.y)
+    elif between_p1_p2_y:
+        return Vector2(p1.x, p3.y)
+    else:
+        raise NoOrthogonalConnection(
+            f"Failed to find an orthogonal connection to p3={p3} from the line connecting p1={p1} to p2={p2}"
+        )
