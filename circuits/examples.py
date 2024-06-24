@@ -1,4 +1,4 @@
-from circuits.new_wire import Wire
+from circuits.wire import Wire
 from circuits.not_gate import NotGate
 from circuits.source import Source
 from circuits.transistor import Transistor, TRANSISTOR_SIZE
@@ -129,10 +129,10 @@ def or_gate(i1: Source, i2: Source):
     t2 = Transistor(t2_battery, t2_signal)
 
     output = Wire("output", t1.output)
-    output.add_stretch(get_render_coords(0, 0), debug=True)
-    output.add_stretch(get_render_coords(0, -20), debug=True)
-    output.add_stretch(get_render_coords(20, -10), debug=True)
-    output.add_stretch(get_render_coords(20, 0), debug=True)
+    output.add_stretch(get_render_coords(0, 0))
+    output.add_stretch(get_render_coords(0, -20))
+    output.add_stretch(get_render_coords(20, -10))
+    output.add_stretch(get_render_coords(20, 0))
     output.add_connection(t2.output)
 
     return (input_one, input_two, t1, t2, output)

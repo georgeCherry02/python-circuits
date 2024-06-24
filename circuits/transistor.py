@@ -1,4 +1,4 @@
-from circuits.new_wire import Wire
+from circuits.wire import Wire
 from circuits.colours import DEAD_COLOUR, LIVE_COLOUR
 
 from pygame import draw, Surface

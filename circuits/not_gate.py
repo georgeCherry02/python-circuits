@@ -1,4 +1,4 @@
-from circuits.new_wire import Wire
+from circuits.wire import Wire
 from circuits.colours import DEAD_COLOUR
 
 from geometry import DIRECTION, get_dir_vec, get_clockwise_dir, get_anticlockwise_dir
