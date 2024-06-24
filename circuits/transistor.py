@@ -1,5 +1,5 @@
-from .connection_point import ConnectionPoint
-from .colours import DEAD_COLOUR, LIVE_COLOUR
+from circuits.new_wire import Wire
+from circuits.colours import DEAD_COLOUR, LIVE_COLOUR
 
 from pygame import draw, Surface
 
@@ -11,13 +11,13 @@ class Transistor:
     This class represents a transistor component
     """
 
-    def __init__(self, input: ConnectionPoint, signal: ConnectionPoint):
+    def __init__(self, input: Wire.ConnectionPoint, signal: Wire.ConnectionPoint):
         self.location = input.location + (TRANSISTOR_SIZE, 0)
         if input.location + (TRANSISTOR_SIZE, TRANSISTOR_SIZE) != signal.location:
             raise Exception("Passed invalid connection points, two far apart!")
         self.input = input
         self.signal = signal
-        self.output = ConnectionPoint(input.location + (2 * TRANSISTOR_SIZE - 1, 0), self._output)
+        self.output = Wire.ConnectionPoint(input.location + (2 * TRANSISTOR_SIZE - 1, 0), self._output)
 
     def _output(self):
         return self.input.high() and self.signal.high()

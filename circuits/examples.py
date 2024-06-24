@@ -1,10 +1,7 @@
-from .connection_point import ConnectionPoint
-from .not_gate import NotGate
-from .source import Source
-from .transistor import Transistor, TRANSISTOR_SIZE
-from .wire import Wire
+from circuits.new_wire import Wire
+from circuits.source import Source
+from circuits.transistor import Transistor, TRANSISTOR_SIZE
 
-from typing import Callable
 from pygame import Vector2
 
 
@@ -12,26 +9,31 @@ def get_render_coords(x: int, y: int) -> Vector2:
     return Vector2(x + 250, y + 250)
 
 
-def get_dead_connection(x: int, y: int) -> ConnectionPoint:
-    return ConnectionPoint(get_render_coords(x, y), lambda: False)
+def get_dead_connection(x: int, y: int) -> Wire.ConnectionPoint:
+    return Wire.ConnectionPoint(get_render_coords(x, y), lambda: False)
 
 
 def simple_example(source: Source, signal: Source):
-    source_start = ConnectionPoint(get_render_coords(-20, 0), source.high)
+    source_start = Wire.ConnectionPoint(get_render_coords(-20, 0), source.high)
     source_end = get_dead_connection(-TRANSISTOR_SIZE, 0)
-    source_wire = Wire(source_start, source_end)
+    source_wire = Wire("source", source_start)
+    source_wire.add_connection(source_end)
 
-    signal_start = ConnectionPoint(get_render_coords(0, 20), signal.high)
+    signal_start = Wire.ConnectionPoint(get_render_coords(0, 20), signal.high)
     signal_end = get_dead_connection(0, TRANSISTOR_SIZE)
-    signal_wire = Wire(signal_start, signal_end)
+    signal_wire = Wire("signal", signal_start)
+    signal_wire.add_connection(signal_end)
 
     transistor = Transistor(source_end, signal_end)
 
     output_end = get_dead_connection(20, 0)
-    output_wire = Wire(transistor.output, output_end)
+    output_wire = Wire("output", transistor.output)
+    output_wire.add_connection(output_end)
+
     return (source_wire, signal_wire, output_wire, transistor)
 
 
+"""
 def not_gate(source: Source):
     source_start = ConnectionPoint(get_render_coords(-20, 0), source.high)
     source_end = get_dead_connection(-5, 0)
@@ -111,3 +113,4 @@ def or_gate(i1_state: Callable[[], bool], i2_state: Callable[[], bool]):
     t1_t2_meet = t1_out1.connect_wire(t2_out1, "End")
 
     return (i1_wire, i2_wire, t1, t2, t1_out, t1_out1, t2_out, t2_out1, t1_t2_meet)
+"""

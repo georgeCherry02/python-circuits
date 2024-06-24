@@ -1,11 +1,10 @@
-from circuits.connection_point import ConnectionPoint
 from circuits.colours import DEAD_COLOUR, LIVE_COLOUR
 from .geometry import get_nearest_point
 
 from pygame import draw, Surface, Vector2
 
 from math import inf
-from typing import List, Tuple
+from typing import Callable, List, Optional, Tuple
 
 
 def find_nearest_point_across_seq(
@@ -29,15 +28,51 @@ class Wire:
     stretches
     """
 
-    def __init__(self, first_point: ConnectionPoint, label=""):
+    class ConnectionPoint:
+        """
+        This class represents a connection point to a wire, or on a Component
+        @member location: Vector2
+        @member _state_functor: Callable[[]bool]
+        """
+
+        def __init__(
+            self, location: Vector2, state_functor: Callable[[], bool] = lambda: True
+        ):
+            self.connected_wires = []
+            self.location = location
+            self._state_functor = state_functor
+
+        def set_state_functor(self, functor: Callable[[], bool]):
+            self._state_functor = functor
+
+        def connect_wire(self, wire: "Wire"):
+            self.connected_wires.append(wire)
+
+        def high(self, /, from_wire: Optional["Wire"] = None) -> bool:
+            return self._state_functor() or any(
+                (wire.high() for wire in self.connected_wires if wire != from_wire)
+            )
+
+    def __init__(self, id: str, first_point: ConnectionPoint):
+        self.id = id
         self.connections = [first_point]
         self.segments = []
-        self.label = label
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Wire):
+            return self.id == other.id
+        elif isinstance(other, str):
+            return self.id == other
+        else:
+            return False
 
     def __repr__(self) -> str:
-        return f"[label={self.label}, segments={self.segments}, connections={self.connections}]"
+        return (
+            f"[id={self.id}, segments={self.segments}, connections={self.connections}]"
+        )
 
     def add_connection(self, point: ConnectionPoint):
+        point.connect_wire(self)
         self.connections.append(point)
         self.add_stretch(point.location)
 
@@ -50,7 +85,7 @@ class Wire:
         self.segments.append((nearest_point, target))
 
     def high(self) -> bool:
-        return any((con.high() for con in self.connections))
+        return any((con.high(from_wire=self) for con in self.connections))
 
     def draw(self, screen: Surface):
         colour = LIVE_COLOUR if self.high() else DEAD_COLOUR
