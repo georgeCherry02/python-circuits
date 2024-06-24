@@ -14,7 +14,6 @@ class Transistor:
     def __init__(self, input: ConnectionPoint, signal: ConnectionPoint):
         self.location = input.location + (TRANSISTOR_SIZE, 0)
         if input.location + (TRANSISTOR_SIZE, TRANSISTOR_SIZE) != signal.location:
-            print("Oh no...")
             raise Exception("Passed invalid connection points, two far apart!")
         self.input = input
         self.signal = signal

@@ -6,6 +6,8 @@ from pygame import Vector2
 class ConnectionPoint:
     """
     This class represents a connection point on a component
+    @member location: Vector2
+    @member _state_functor: Callable[[]bool]
     """
 
     def __init__(

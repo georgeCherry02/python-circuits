@@ -4,10 +4,8 @@ from .source import Source
 from .transistor import Transistor, TRANSISTOR_SIZE
 from .wire import Wire
 
+from typing import Callable
 from pygame import Vector2
-
-source = Source()
-signal = Source()
 
 
 def get_render_coords(x: int, y: int) -> Vector2:
@@ -18,7 +16,7 @@ def get_dead_connection(x: int, y: int) -> ConnectionPoint:
     return ConnectionPoint(get_render_coords(x, y), lambda: False)
 
 
-def simple_example():
+def simple_example(source: Source, signal: Source):
     source_start = ConnectionPoint(get_render_coords(-20, 0), source.high)
     source_end = get_dead_connection(-TRANSISTOR_SIZE, 0)
     source_wire = Wire(source_start, source_end)
@@ -34,7 +32,7 @@ def simple_example():
     return (source_wire, signal_wire, output_wire, transistor)
 
 
-def not_gate():
+def not_gate(source: Source):
     source_start = ConnectionPoint(get_render_coords(-20, 0), source.high)
     source_end = get_dead_connection(-5, 0)
     source_wire = Wire(source_start, source_end)
@@ -46,7 +44,7 @@ def not_gate():
     return [source_wire, output_wire, not_gate]
 
 
-def not_gate_if_resistance_was_a_thing():
+def not_gate_if_resistance_was_a_thing(source: Source):
     input = ConnectionPoint(get_render_coords(0, 20), source.high)
     input_mid = get_dead_connection(0, 10)
 
@@ -87,12 +85,12 @@ def not_gate_if_resistance_was_a_thing():
     ]
 
 
-def or_gate():
-    i1_start = ConnectionPoint(get_render_coords(-10, 20), source.high)
+def or_gate(i1_state: Callable[[], bool], i2_state: Callable[[], bool]):
+    i1_start = ConnectionPoint(get_render_coords(-10, 20), i1_state)
     i1_end = get_dead_connection(-10, TRANSISTOR_SIZE)
     i1_wire = Wire(i1_start, i1_end, "i1")
 
-    i2_start = ConnectionPoint(get_render_coords(10, 20), signal.high)
+    i2_start = ConnectionPoint(get_render_coords(10, 20), i2_state)
     i2_end = get_dead_connection(10, TRANSISTOR_SIZE)
     i2_wire = Wire(i2_start, i2_end, "i2")
 
@@ -112,6 +110,4 @@ def or_gate():
     t2_out1 = t2_out.extend(get_dead_connection(20, -10))
     t1_t2_meet = t1_out1.connect_wire(t2_out1, "End")
 
-    # output_end = get_dead_connection(20, 0)
-    # output_wire = Wire(transistor.output, output_end)
     return (i1_wire, i2_wire, t1, t2, t1_out, t1_out1, t2_out, t2_out1, t1_t2_meet)
